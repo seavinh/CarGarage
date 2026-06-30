@@ -1,0 +1,74 @@
+<div class="page-header">
+  <h1 class="page-title">Paint Colors</h1>
+  <button class="btn" (click)="openAdd()">+ Add Color</button>
+</div>
+
+<div class="toolbar">
+  <div class="search-box">
+    <span>🔍</span>
+    <input type="text" placeholder="Search colors..." [(ngModel)]="colorSearch">
+  </div>
+</div>
+
+<div class="card">
+  <table>
+    <thead>
+      <tr>
+        <th>Color</th>
+        <th>Name</th>
+        <th>Code</th>
+        <th>Price</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (color of filteredColors(); track color._id) {
+      <tr>
+        <td>
+          <div class="color-preview" [style.background]="color.code || '#ccc'" [style.border-color]="(color.code || '#ccc') === '#ffffff' ? '#e5e7eb' : 'transparent'"></div>
+        </td>
+        <td class="name-cell">{{color.name}}</td>
+        <td class="code-cell">{{color.code || '—'}}</td>
+        <td class="price-cell">${{(color.price || 0).toFixed(2)}}</td>
+        <td class="actions-cell">
+          <button class="btn-icon" (click)="openEdit(color)" title="Edit">✏️</button>
+          <button class="btn-icon delete" (click)="onDelete(color._id!)" title="Delete">🗑️</button>
+        </td>
+      </tr>
+      } @empty {
+      <tr>
+        <td colspan="5" class="empty-row">No colors found</td>
+      </tr>
+      }
+    </tbody>
+  </table>
+</div>
+
+@if (showModal) {
+<div class="modal-overlay">
+  <div class="card modal">
+    <h3>{{ editing ? 'Edit Color' : 'Add New Color' }}</h3>
+    <div class="modal-form">
+      <div>
+        <label>Name</label>
+        <input type="text" placeholder="e.g. Midnight Blue" [(ngModel)]="form.name">
+      </div>
+      <div>
+        <label>Color Code</label>
+        <div class="color-input-row">
+          <input type="color" [(ngModel)]="form.code" class="color-picker">
+          <input type="text" placeholder="#000000" [(ngModel)]="form.code" class="color-text">
+        </div>
+      </div>
+      <div>
+        <label>Price ($)</label>
+        <input type="number" [(ngModel)]="form.price" placeholder="0.00">
+      </div>
+      <div class="modal-actions">
+        <button class="btn-secondary" (click)="showModal = false">Cancel</button>
+        <button class="btn" (click)="save()">{{ editing ? 'Update' : 'Save' }}</button>
+      </div>
+    </div>
+  </div>
+</div>
+}

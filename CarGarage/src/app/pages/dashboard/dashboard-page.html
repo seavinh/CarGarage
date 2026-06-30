@@ -1,0 +1,98 @@
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="lang-switcher">
+      <button class="lang-btn active">EN</button>
+      <button class="lang-btn">KH</button>
+    </div>
+    <button class="btn-icon">🔔</button>
+    <div class="user-avatar"><img src="https://i.pravatar.cc/100"></div>
+    <span class="user-label">Customer Service</span>
+  </div>
+</header>
+
+<div class="dashboard-header">
+  <div class="header-title">Summary</div>
+  <div class="header-controls">
+    <select [(ngModel)]="dateSpan" class="select-outline">
+      <option value="Today">📅 Today</option>
+      <option value="This Month">📅 This Month</option>
+      <option value="This Year">📅 This Year</option>
+      <option value="All Time">📅 All Time</option>
+    </select>
+    <select [(ngModel)]="taskFilter" class="select-primary">
+      <option value="All Tasks">🔻 All Tasks</option>
+      <option value="Completed">🔻 Completed</option>
+      <option value="Pending">🔻 Pending</option>
+      <option value="Painting">🔻 Painting</option>
+    </select>
+  </div>
+</div>
+
+<div class="content">
+  <div class="card main-card">
+    <div class="stats-grid">
+      <div class="stat-card revenue-card">
+        <div class="stat-header">
+          <span>Revenue</span>
+          <div class="stat-icon">💵</div>
+        </div>
+        <div class="stat-value">{{ stats().revenue | number:'1.0-0' }}</div>
+        <div class="stat-footer">
+          <span class="stat-badge">↗ {{ stats().completedPct }}%</span>
+          <span>Completed earnings</span>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-header">
+          <span>Total Vehicles</span>
+          <div class="stat-icon light">🚘</div>
+        </div>
+        <div class="stat-value dark">{{ carCount() }}</div>
+        <div class="stat-footer">
+          <span class="badge-primary">Total Vehicles</span>
+          <span>Registered Vehicles</span>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-header">
+          <span>Total Orders</span>
+          <div class="stat-icon light">🔧</div>
+        </div>
+        <div class="stat-value dark">{{ stats().orderCount }}</div>
+        <div class="stat-footer">
+          <span class="badge-primary">Total Orders</span>
+          <span>Active & Past Tasks</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="chart-section">
+      <div class="donut-container">
+        <div class="donut" [style.background]="stats().gradient">
+          <div class="donut-inner">
+            <span class="donut-label">Total Revenue</span>
+            <span class="donut-value">{{ stats().revenue >= 1000 ? (stats().revenue / 1000).toFixed(1) + 'K' : stats().revenue }}</span>
+          </div>
+        </div>
+
+        <div class="legend">
+          <div class="legend-title">REVENUE SHARE (%)</div>
+          <div class="legend-item">
+            <div class="legend-dot doing"></div>
+            <span>Doing ({{stats().paintingPct}}%)</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-dot pending"></div>
+            <span>Pending ({{stats().pendingPct}}%)</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-dot completed"></div>
+            <span>Completed ({{stats().completedPct}}%)</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

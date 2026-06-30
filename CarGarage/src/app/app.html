@@ -1,0 +1,106 @@
+@if (authService.currentUser()) {
+<div class="layout-wrapper">
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="user-avatar" style="background:var(--primary); color:white; font-size: 1rem; margin-right: -4px;">
+        {{ authService.currentUser()?.name?.charAt(0)?.toUpperCase() || 'U' }}
+      </div>
+      {{ authService.currentUser()?.name || 'User' }}
+    </div>
+
+    <nav class="sidebar-nav">
+      <a class="nav-item" [class.active]="activeTab() === 'dashboard'" (click)="setTab('dashboard')">
+        <span class="nav-icon">📊</span> Dashboard
+      </a>
+
+      <div style="font-size: 0.75rem; font-weight: 600; color: #9ca3af; margin: 15px 24px 5px; text-transform: uppercase;">Records</div>
+
+      <a class="nav-item" [class.active]="activeTab() === 'customers'" (click)="setTab('customers')">
+        <span class="nav-icon">👥</span> User Management
+      </a>
+      <a class="nav-item" [class.active]="activeTab() === 'cars'" (click)="setTab('cars')">
+        <span class="nav-icon">🚘</span> Vehicles
+      </a>
+      <a class="nav-item" [class.active]="activeTab() === 'orders'" (click)="setTab('orders')">
+        <span class="nav-icon">📋</span> Paint Tasks
+      </a>
+      <a class="nav-item" [class.active]="activeTab() === 'colors'" (click)="setTab('colors')">
+        <span class="nav-icon">🎨</span> Colors
+      </a>
+      <a class="nav-item" [class.active]="activeTab() === 'payments'" (click)="setTab('payments')">
+        <span class="nav-icon">💰</span> Payments
+      </a>
+
+      <div style="flex: 1;"></div>
+      <a class="nav-item" (click)="logout()"
+        style="color: #ef4444; margin-top: auto; border-top: 1px solid #e2e8f0; border-radius: 0; padding-top: 20px;">
+        <span class="nav-icon">🚪</span> Logout
+      </a>
+    </nav>
+  </aside>
+
+  <main class="main-wrapper">
+    @if (activeTab() === 'dashboard') {
+      <app-dashboard-page [orders]="orders()" [carCount]="cars().length" />
+    }
+
+    @if (activeTab() === 'customers') {
+      <app-customers-page
+        [customers]="customers()"
+        (addCustomer)="handleAddCustomer($event)"
+        (editCustomer)="handleEditCustomer($event)"
+        (deleteCustomer)="handleDeleteCustomer($event)"
+      />
+    }
+
+    @if (activeTab() === 'cars') {
+      <app-cars-page
+        [cars]="cars()"
+        [customers]="customers()"
+        (addCar)="handleAddCar($event)"
+        (editCar)="handleEditCar($event)"
+        (deleteCar)="handleDeleteCar($event)"
+      />
+    }
+
+    @if (activeTab() === 'orders') {
+      <app-paint-orders-page
+        [orders]="orders()"
+        [customers]="customers()"
+        [cars]="cars()"
+        (addOrder)="handleAddOrder($event)"
+        (updateStatus)="handleUpdateStatus($event)"
+        (deleteOrder)="handleDeleteOrder($event)"
+        (generateInvoice)="handleGenerateInvoice($event)"
+        (generateReport)="handleGenerateReport($event)"
+      />
+    }
+
+    @if (activeTab() === 'colors') {
+      <app-colors-page
+        [colors]="colors()"
+        (addColor)="handleAddColor($event)"
+        (editColor)="handleEditColor($event)"
+        (deleteColor)="handleDeleteColor($event)"
+      />
+    }
+
+    @if (activeTab() === 'payments') {
+      <app-payments-page
+        [payments]="payments()"
+        [orders]="orders()"
+        (addPayment)="handleAddPayment($event)"
+        (editPayment)="handleEditPayment($event)"
+        (deletePayment)="handleDeletePayment($event)"
+      />
+    }
+  </main>
+</div>
+} @else {
+<app-login-page
+  [serverError]="authError()"
+  [isLoading]="authLoading()"
+  (login)="handleLogin($event)"
+  (register)="handleRegister($event)"
+/>
+}

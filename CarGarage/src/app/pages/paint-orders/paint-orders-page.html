@@ -1,0 +1,360 @@
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="search-box">
+      <span>🔍</span>
+      <input type="text" placeholder="Search Task..." [(ngModel)]="orderSearch">
+    </div>
+    <div class="topbar-actions">
+      <button class="btn-icon">🔔</button>
+      <div class="user-avatar"><img src="https://i.pravatar.cc/100"></div>
+    </div>
+  </div>
+</header>
+
+<div class="content">
+  <div class="page-header">
+    <div class="page-header-left">
+      <div class="page-title">Tasks</div>
+      <div class="view-switcher">
+        <span (click)="taskView.set('kanban')" [class.active]="taskView() === 'kanban'">☰ Kanban</span>
+        <span (click)="taskView.set('list')" [class.active]="taskView() === 'list'">≡ List</span>
+        <span (click)="taskView.set('table')" [class.active]="taskView() === 'table'">▦ Table</span>
+      </div>
+    </div>
+    <div class="page-header-actions">
+      <button class="btn-secondary" (click)="exportCSV()">⎋ Export CSV</button>
+      <button class="btn-secondary report-btn" (click)="showReportModal = true">📊 Full Report</button>
+      <button class="btn" (click)="openAdd()">+ Add Task</button>
+    </div>
+  </div>
+
+  <div class="sub-toolbar">
+    <div class="search-box small">
+      <span>🔍</span>
+      <input type="text" placeholder="Search Task..." [(ngModel)]="orderSearch">
+    </div>
+    <div class="status-tabs">
+      <button (click)="taskFilter.set('All')" [class.active]="taskFilter() === 'All'">All Tasks</button>
+      <button (click)="taskFilter.set('Pending')" [class.active]="taskFilter() === 'Pending'">To do</button>
+      <button (click)="taskFilter.set('Painting')" [class.active]="taskFilter() === 'Painting'">Doing</button>
+      <button (click)="taskFilter.set('Completed')" [class.active]="taskFilter() === 'Completed'">Done</button>
+    </div>
+    <div class="sub-toolbar-right">
+      <select [(ngModel)]="taskSort" class="sort-select">
+        <option value="newest">⇅ Newest First</option>
+        <option value="oldest">⇅ Oldest First</option>
+        <option value="priceHigh">⇅ Price: High-Low</option>
+        <option value="priceLow">⇅ Price: Low-High</option>
+      </select>
+      <button (click)="showTaskFilter.set(!showTaskFilter())" class="filter-btn" [class.active]="showTaskFilter()">⦨ Filter</button>
+    </div>
+  </div>
+
+  @if (showTaskFilter()) {
+  <div class="filter-panel">
+    <div>
+      <label>Min Price ($)</label>
+      <input type="number" [(ngModel)]="taskMinPrice" placeholder="0">
+    </div>
+    <div>
+      <label>Max Price ($)</label>
+      <input type="number" [(ngModel)]="taskMaxPrice" placeholder="Any">
+    </div>
+    <button class="clear-btn" (click)="taskMinPrice.set(null); taskMaxPrice.set(null);">✕ Clear</button>
+  </div>
+  }
+
+  @if (taskView() === 'kanban') {
+  <div class="kanban-board">
+    @if (taskFilter() === 'All' || taskFilter() === 'Pending') {
+    <div class="kanban-column">
+      <div class="kanban-header">
+        <div class="kanban-header-left">
+          <div class="dot dot-todo"></div>
+          To do <span class="kanban-count">{{ (orders() | filterByStatus:'Pending').length }} Tasks</span>
+        </div>
+        <span class="add-icon">+</span>
+      </div>
+      <div class="kanban-items">
+        @for (order of filteredOrders() | filterByStatus:'Pending'; track order._id; let i = $index) {
+        <div class="k-card">
+          <div class="k-card-top">
+            <div class="k-card-title">{{order.paintType}} Paint Job</div>
+            <div class="k-card-actions">
+              <button (click)="onUpdateStatus(order, 'Painting')" title="Start Task">➡️</button>
+              <button (click)="onDelete(order._id!)" class="danger">🗑️</button>
+            </div>
+          </div>
+          <div class="k-card-desc">
+            Customer: {{getCustomerName(order.customerId)}}<br>
+            Vehicle: {{getCarDetails(order.carId)}}
+          </div>
+          <div class="k-tags">
+            @if (i % 2 === 0) {
+            <span class="tag-internal">• Internal</span>
+            <span class="tag-urgent">• Urgent</span>
+            } @else {
+            <span class="tag-internal">• Internal</span>
+            <span class="tag-lead">• Lead</span>
+            }
+          </div>
+          <div class="k-footer">
+            <div class="k-price">US$ {{order.price || 0}}</div>
+            <button class="invoice-btn" (click)="onGenerateInvoice(order)">📄 Invoice</button>
+          </div>
+          <div class="k-footer">
+            <div class="k-date">📅 Due Date 11 Jan 2025</div>
+            <div class="k-avatars">
+              <span class="mini-avatar">A</span>
+              <span class="mini-avatar">C</span>
+              <span>💬 {{i+2}}</span>
+            </div>
+          </div>
+        </div>
+        }
+        @if ((filteredOrders() | filterByStatus:'Pending').length === 0) {
+        <div class="empty-col">No Tasks</div>
+        }
+      </div>
+    </div>
+    }
+
+    @if (taskFilter() === 'All' || taskFilter() === 'Painting') {
+    <div class="kanban-column">
+      <div class="kanban-header">
+        <div class="kanban-header-left">
+          <div class="dot dot-doing"></div>
+          Doing <span class="kanban-count">{{ (orders() | filterByStatus:'Painting').length }} Tasks</span>
+        </div>
+        <span class="add-icon">+</span>
+      </div>
+      <div class="kanban-items">
+        @for (order of filteredOrders() | filterByStatus:'Painting'; track order._id; let i = $index) {
+        <div class="k-card">
+          <div class="k-card-top">
+            <div class="k-card-title">{{order.paintType}} Paint Job</div>
+            <div class="k-card-actions">
+              <button (click)="onUpdateStatus(order, 'Pending')" title="Move Back">⬅️</button>
+              <button (click)="onUpdateStatus(order, 'Completed')" title="Mark Done">➡️</button>
+              <button (click)="onDelete(order._id!)" class="danger">🗑️</button>
+            </div>
+          </div>
+          <div class="k-card-desc">
+            Customer: {{getCustomerName(order.customerId)}}<br>
+            Vehicle: {{getCarDetails(order.carId)}}
+          </div>
+          <div class="k-tags"><span class="tag-internal">• Processing</span></div>
+          <div class="k-footer">
+            <div class="k-price">US$ {{order.price || 0}}</div>
+            <button class="invoice-btn" (click)="onGenerateInvoice(order)">📄 Invoice</button>
+          </div>
+          <div class="k-footer">
+            <div class="k-date">📅 Due Date 12 Jan 2025</div>
+          </div>
+        </div>
+        }
+        @if ((filteredOrders() | filterByStatus:'Painting').length === 0) {
+        <div class="empty-col">No Tasks</div>
+        }
+      </div>
+    </div>
+    }
+
+    @if (taskFilter() === 'All' || taskFilter() === 'Completed') {
+    <div class="kanban-column">
+      <div class="kanban-header">
+        <div class="kanban-header-left">
+          <div class="dot dot-done"></div>
+          Done <span class="kanban-count">{{ (orders() | filterByStatus:'Completed').length }} Tasks</span>
+        </div>
+        <span class="add-icon">+</span>
+      </div>
+      <div class="kanban-items">
+        @for (order of filteredOrders() | filterByStatus:'Completed'; track order._id; let i = $index) {
+        <div class="k-card">
+          <div class="k-card-top">
+            <div class="k-card-title">{{order.paintType}} Paint Job</div>
+            <div class="k-card-actions">
+              <button (click)="onUpdateStatus(order, 'Painting')" title="Move Back">⬅️</button>
+              <button (click)="onDelete(order._id!)" class="danger">🗑️</button>
+            </div>
+          </div>
+          <div class="k-card-desc">
+            Customer: {{getCustomerName(order.customerId)}}<br>
+            Vehicle: {{getCarDetails(order.carId)}}
+          </div>
+          <div class="k-tags"><span class="tag-lead">• Completed</span></div>
+          <div class="k-footer">
+            <div class="k-price">US$ {{order.price || 0}}</div>
+            <button class="invoice-btn" (click)="onGenerateInvoice(order)">📄 Invoice</button>
+          </div>
+          <div class="k-footer">
+            <div class="k-date">📅 Finished</div>
+          </div>
+        </div>
+        }
+        @if ((filteredOrders() | filterByStatus:'Completed').length === 0) {
+        <div class="empty-col">No Tasks</div>
+        }
+      </div>
+    </div>
+    }
+  </div>
+  }
+
+  @if (taskView() === 'list') {
+  <div class="list-view">
+    @for (order of filteredOrders() | filterByStatus:(taskFilter() === 'All' ? '' : taskFilter()); track order._id) {
+    <div class="list-card">
+      <div>
+        <div class="list-title">{{order.paintType}} Paint Job</div>
+        <div class="list-sub">
+          Customer: <strong>{{getCustomerName(order.customerId)}}</strong> &nbsp;|&nbsp;
+          Vehicle: <strong>{{getCarDetails(order.carId)}}</strong>
+        </div>
+      </div>
+      <div class="list-actions">
+        <span class="status-pill">{{order.status}}</span>
+        <span class="list-price">US$ {{order.price || 0}}</span>
+        <button class="invoice-btn" (click)="onGenerateInvoice(order)">📄 Invoice</button>
+        <button class="btn-icon danger" (click)="onDelete(order._id!)">🗑️</button>
+      </div>
+    </div>
+    }
+    @if ((filteredOrders() | filterByStatus:(taskFilter() === 'All' ? '' : taskFilter())).length === 0) {
+    <div class="empty-state">No Tasks Found In This View</div>
+    }
+  </div>
+  }
+
+  @if (taskView() === 'table') {
+  <div class="card table-card">
+    <table>
+      <thead>
+        <tr>
+          <th>Task Name</th>
+          <th>Customer</th>
+          <th>Vehicle</th>
+          <th>Status</th>
+          <th>Price</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (order of filteredOrders() | filterByStatus:(taskFilter() === 'All' ? '' : taskFilter()); track order._id) {
+        <tr>
+          <td class="task-name">{{order.paintType}} Paint Job</td>
+          <td>
+            <div class="user-cell">
+              <div class="mini-avatar">{{getCustomerName(order.customerId).charAt(0)}}</div>
+              <span>{{getCustomerName(order.customerId)}}</span>
+            </div>
+          </td>
+          <td>{{getCarDetails(order.carId)}}</td>
+          <td><span class="status-pill">{{order.status}}</span></td>
+          <td class="price-cell">US$ {{order.price || 0}}</td>
+          <td class="table-actions">
+            <button class="btn-icon" (click)="onGenerateInvoice(order)" title="Invoice">📄</button>
+            <button class="btn-icon danger" (click)="onDelete(order._id!)" title="Delete">🗑️</button>
+          </td>
+        </tr>
+        }
+      </tbody>
+    </table>
+    @if ((filteredOrders() | filterByStatus:(taskFilter() === 'All' ? '' : taskFilter())).length === 0) {
+    <div class="empty-table">No Tasks Found In This View</div>
+    }
+  </div>
+  }
+</div>
+
+@if (showModal) {
+<div class="modal-overlay">
+  <div class="card modal">
+    <h3>Add New Paint Task</h3>
+    <div class="modal-form">
+      <div>
+        <label>Customer</label>
+        <select [(ngModel)]="newTask.customerId">
+          <option [ngValue]="null">-- Select Customer --</option>
+          @for (c of customers(); track c._id) {
+          <option [ngValue]="c._id">{{c.name}}</option>
+          }
+        </select>
+      </div>
+      <div>
+        <label>Vehicle</label>
+        <select [(ngModel)]="newTask.carId">
+          <option [ngValue]="null">-- Select Vehicle --</option>
+          @for (car of cars(); track car._id) {
+          <option [ngValue]="car._id">{{car.brand}} {{car.plateNumber}}</option>
+          }
+        </select>
+      </div>
+      <div>
+        <label>Paint Type <span class="hint">— type or choose</span></label>
+        <input list="paintTypeList" [(ngModel)]="newTask.paintType" placeholder="e.g. Full Car Paint, Hood, Custom...">
+        <datalist id="paintTypeList">
+          <option value="Full Car">Full Car Paint</option>
+          <option value="Half Car">Half Car Paint</option>
+          <option value="Door">Door Panel</option>
+          <option value="Bumper">Bumper</option>
+          <option value="Hood">Hood</option>
+          <option value="Roof">Roof</option>
+          <option value="Trunk">Trunk / Boot</option>
+          <option value="Fender">Fender</option>
+          <option value="Side Mirror">Side Mirror</option>
+          <option value="Front Panel">Front Panel</option>
+          <option value="Rear Panel">Rear Panel</option>
+          <option value="Custom">Custom / Other</option>
+        </datalist>
+      </div>
+      <div>
+        <label>Task Price ($)</label>
+        <input type="number" placeholder="0.00" [(ngModel)]="newTask.price">
+      </div>
+      <div>
+        <label>Status</label>
+        <select [(ngModel)]="newTask.status">
+          <option value="Pending">Pending</option>
+          <option value="Painting">Doing</option>
+          <option value="Completed">Completed</option>
+        </select>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-secondary" (click)="showModal = false">Cancel</button>
+        <button class="btn" (click)="saveTask()">Create Task</button>
+      </div>
+    </div>
+  </div>
+</div>
+}
+
+@if (showReportModal) {
+<div class="modal-overlay">
+  <div class="report-modal">
+    <div class="report-modal-header">
+      <div class="report-icon">📊</div>
+      <div>
+        <h3>Generate Business Report</h3>
+        <p>Select a date range to filter the report</p>
+      </div>
+    </div>
+    <div class="report-date-grid">
+      <div>
+        <label>📅 From Date</label>
+        <input type="date" [(ngModel)]="reportDateFrom">
+      </div>
+      <div>
+        <label>📅 To Date</label>
+        <input type="date" [(ngModel)]="reportDateTo">
+      </div>
+    </div>
+    <div class="report-hint">💡 <strong>Leave both blank</strong> to include <strong>all orders</strong> in the report.</div>
+    <div class="modal-actions">
+      <button class="btn-secondary" (click)="showReportModal = false; reportDateFrom = ''; reportDateTo = '';">Cancel</button>
+      <button class="btn gradient-btn" (click)="onGenerateReport()">📊 Generate Report</button>
+    </div>
+  </div>
+</div>
+}

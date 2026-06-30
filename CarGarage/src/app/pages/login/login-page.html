@@ -1,0 +1,62 @@
+<div class="login-wrapper">
+  <div class="login-card">
+    <div class="logo-box">CG</div>
+
+    <h2 class="login-title">{{ mode() === 'login' ? 'Welcome Back' : 'Create an Account' }}</h2>
+    <p class="login-subtitle">
+      {{ mode() === 'login' ? 'Enter your credentials to access your dashboard' : 'Sign up to manage your operations' }}
+    </p>
+
+    @if (serverError() || error()) {
+    <div class="error-banner">{{ serverError() || error() }}</div>
+    }
+
+    @if (mode() === 'login') {
+    <div class="form-group">
+      <label>Email or Username</label>
+      <input type="text" [(ngModel)]="loginCreds.emailOrUsername" placeholder="e.g. admin@cg.com" required>
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" [(ngModel)]="loginCreds.password" placeholder="••••••••" required>
+    </div>
+    <button class="login-btn" (click)="onLogin()" [disabled]="isLoading()">
+      {{ isLoading() ? 'Signing in...' : 'Sign In' }}
+    </button>
+
+    <div class="switch-text">
+      Don't have an account? <span (click)="switchMode('register')">Sign up</span>
+    </div>
+    } @else {
+    <div class="form-row">
+      <div class="form-group">
+        <label>Full Name</label>
+        <input type="text" [(ngModel)]="registerData.name" placeholder="John Doe" required>
+      </div>
+      <div class="form-group">
+        <label>Username</label>
+        <input type="text" [(ngModel)]="registerData.username" placeholder="johndoe" required>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Email Address</label>
+      <input type="email" [(ngModel)]="registerData.email" placeholder="john&#64;example.com" required>
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" [(ngModel)]="registerData.password" placeholder="Min 6 characters" required>
+    </div>
+    <div class="form-group">
+      <label>Confirm Password</label>
+      <input type="password" [(ngModel)]="registerData.confirmPassword" placeholder="Repeat password" required>
+    </div>
+    <button class="login-btn" (click)="onRegister()" [disabled]="isLoading()">
+      {{ isLoading() ? 'Creating account...' : 'Create Account' }}
+    </button>
+
+    <div class="switch-text">
+      Already have an account? <span (click)="switchMode('login')">Sign in</span>
+    </div>
+    }
+  </div>
+</div>

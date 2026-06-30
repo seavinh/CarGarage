@@ -1,0 +1,157 @@
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="search-box">
+      <span>🔍</span><input type="text" placeholder="Search" [(ngModel)]="carSearch">
+    </div>
+    <div class="topbar-actions">
+      <button class="btn-icon">🔔</button>
+      <div class="user-avatar"><img src="https://i.pravatar.cc/100"></div>
+      <span class="user-label">Customer Service</span>
+    </div>
+  </div>
+</header>
+
+<div class="content">
+  <div class="page-header">
+    <div class="page-header-left">
+      <div class="page-title">Vehicles</div>
+
+      <div class="filter-tabs">
+        <div class="filter-tab" [class.active]="carFilter() === 'all'" (click)="carFilter.set('all')">
+          <span>All Cars</span>
+          <span class="filter-count">{{cars().length}}</span>
+        </div>
+        <div class="filter-tab" [class.active]="carFilter() === 'assigned'" (click)="carFilter.set('assigned')">
+          <span>Assigned</span>
+          <span class="filter-count">{{assignedCarsCount()}}</span>
+        </div>
+        <div class="filter-tab" [class.active]="carFilter() === 'unassigned'" (click)="carFilter.set('unassigned')">
+          <span>Unassigned</span>
+          <span class="filter-count">{{unassignedCarsCount()}}</span>
+        </div>
+        <div class="filter-tab-underline"></div>
+      </div>
+    </div>
+
+    <button class="btn add-btn" (click)="openAddModal()">
+      Add<br>Vehicle
+    </button>
+  </div>
+
+  <div class="search-section">
+    <div class="search-wrapper">
+      <span class="search-icon">🔍</span>
+      <input type="text" placeholder="Search" [(ngModel)]="carSearch">
+    </div>
+
+    <div class="sort-controls">
+      <span class="sort-label">Vehicles <span class="sort-arrow">⌄</span></span>
+      <span class="filter-label"><span class="filter-grid">⧨</span> Filters</span>
+    </div>
+
+    <span class="save-view">Save View</span>
+  </div>
+
+  <div class="card table-card">
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Operator</th>
+          <th>Year</th>
+          <th>Make</th>
+          <th>Status</th>
+          <th>Current Meter</th>
+          <th>License Plate</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (car of filteredCars(); track car._id; let i = $index) {
+        <tr>
+          <td class="name-cell">
+            <div class="color-swatch" [style.background]="car.color"></div>
+            {{car.brand}} {{car.model}}
+          </td>
+          <td>
+            @if (car.customerId) {
+            <div class="user-col">
+              <div class="user-avatar sm">{{getCustomerName(car.customerId).charAt(0)}}</div>
+              <span>{{getCustomerName(car.customerId)}}</span>
+            </div>
+            } @else {
+            <span class="unassigned">Unassigned</span>
+            }
+          </td>
+          <td>{{car.year || '2020'}}</td>
+          <td>{{car.brand}}</td>
+          <td><span class="status active1">Active</span></td>
+          <td>{{i * 10500 + 12000}} mi</td>
+          <td class="plate">{{car.plateNumber}}</td>
+          <td class="actions-cell">
+            <button class="btn-icon" (click)="openEditModal(car)" title="Edit">✏️</button>
+            <button class="btn-icon delete" (click)="onDeleteCar(car._id!)" title="Delete">🗑️</button>
+          </td>
+        </tr>
+        }
+      </tbody>
+    </table>
+
+    <div class="pagination">
+      <div>Items Per Page: <select><option>10</option></select></div>
+      <div class="page-numbers">
+        <span class="page-nav">‹</span>
+        <button class="page-btn">1</button>
+        <button class="page-btn active">2</button>
+        <span class="page-ellipsis">...</span>
+        <button class="page-btn">8</button>
+        <button class="page-btn">9</button>
+        <button class="page-btn">10</button>
+        <span class="page-nav">›</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+@if (showCarModal) {
+<div class="modal-overlay">
+  <div class="card modal">
+    <h3>{{ editingCar ? 'Edit Vehicle' : 'Add New Vehicle' }}</h3>
+    <div class="modal-form">
+      <div>
+        <label>Brand</label>
+        <input type="text" placeholder="e.g. BMW" [(ngModel)]="newCar.brand">
+      </div>
+      <div>
+        <label>Model</label>
+        <input type="text" placeholder="e.g. X5" [(ngModel)]="newCar.model">
+      </div>
+      <div>
+        <label>Year</label>
+        <input type="number" [(ngModel)]="newCar.year">
+      </div>
+      <div>
+        <label>Plate Number</label>
+        <input type="text" placeholder="ABC-1234" [(ngModel)]="newCar.plateNumber">
+      </div>
+      <div>
+        <label>Color</label>
+        <input type="color" [(ngModel)]="newCar.color">
+      </div>
+      <div>
+        <label>Owner</label>
+        <select [(ngModel)]="newCar.customerId">
+          <option [ngValue]="null">Unassigned</option>
+          @for (c of customers(); track c._id) {
+          <option [ngValue]="c._id">{{c.name}}</option>
+          }
+        </select>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-secondary" (click)="showCarModal = false">Cancel</button>
+        <button class="btn" (click)="saveCar()">{{ editingCar ? 'Update' : 'Save' }} Vehicle</button>
+      </div>
+    </div>
+  </div>
+</div>
+}

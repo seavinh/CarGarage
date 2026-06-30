@@ -1,0 +1,97 @@
+<div class="page-header">
+  <h1 class="page-title">Payments</h1>
+  <button class="btn" (click)="openAdd()">+ Add Payment</button>
+</div>
+
+<div class="toolbar">
+  <div class="search-box">
+    <span>🔍</span>
+    <input type="text" placeholder="Search by order..." [(ngModel)]="paymentSearch">
+  </div>
+  <select class="filter-select" [(ngModel)]="statusFilter">
+    <option value="All">All Status</option>
+    <option value="Pending">Pending</option>
+    <option value="Paid">Paid</option>
+  </select>
+</div>
+
+<div class="card">
+  <table>
+    <thead>
+      <tr>
+        <th>Order</th>
+        <th>Amount</th>
+        <th>Method</th>
+        <th>Status</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (payment of filteredPayments(); track payment._id) {
+      <tr>
+        <td class="order-cell">{{getOrderName(payment.orderId)}}</td>
+        <td class="amount-cell">${{(payment.amount || 0).toFixed(2)}}</td>
+        <td>
+          <span class="method-badge" [class.cash]="payment.method === 'Cash'" [class.bakong]="payment.method === 'Bakong'">
+            {{payment.method}}
+          </span>
+        </td>
+        <td>
+          <span class="status-badge" [class.paid]="payment.status === 'Paid'" [class.pending]="payment.status === 'Pending'">
+            {{payment.status}}
+          </span>
+        </td>
+        <td class="actions-cell">
+          <button class="btn-icon" (click)="openEdit(payment)" title="Edit">✏️</button>
+          <button class="btn-icon delete" (click)="onDelete(payment._id!)" title="Delete">🗑️</button>
+        </td>
+      </tr>
+      } @empty {
+      <tr>
+        <td colspan="5" class="empty-row">No payments found</td>
+      </tr>
+      }
+    </tbody>
+  </table>
+</div>
+
+@if (showModal) {
+<div class="modal-overlay">
+  <div class="card modal">
+    <h3>{{ editing ? 'Edit Payment' : 'Add New Payment' }}</h3>
+    <div class="modal-form">
+      <div>
+        <label>Order</label>
+        <select [(ngModel)]="form.orderId">
+          <option [ngValue]="null">-- Select Order --</option>
+          @for (o of orders(); track o._id) {
+          <option [ngValue]="o._id">{{o.paintType}} Paint Job - ${{o.price}}</option>
+          }
+        </select>
+      </div>
+      <div>
+        <label>Amount ($)</label>
+        <input type="number" [(ngModel)]="form.amount" placeholder="0.00">
+      </div>
+      <div>
+        <label>Payment Method</label>
+        <select [(ngModel)]="form.method">
+          <option value="Cash">Cash</option>
+          <option value="Bakong">Bakong</option>
+        </select>
+      </div>
+      <div>
+        <label>Status</label>
+        <select [(ngModel)]="form.status">
+          <option value="Pending">Pending</option>
+          <option value="Paid">Paid</option>
+        </select>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-secondary" (click)="showModal = false">Cancel</button>
+        <button class="btn" (click)="save()">{{ editing ? 'Update' : 'Save' }} Payment</button>
+      </div>
+    </div>
+  </div>
+</div>
+}

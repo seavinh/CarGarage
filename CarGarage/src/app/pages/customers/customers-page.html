@@ -1,0 +1,143 @@
+<header class="topbar">
+  <div class="page-title">User Management</div>
+  <div class="page-subtitle">
+    Manage all users in one place. Control access, assign roles, and monitor activity across your platform.
+  </div>
+</header>
+
+<div class="content">
+  <div class="card table-card">
+    <div class="table-toolbar">
+      <div class="search-box">
+        <span>🔍</span>
+        <input type="text" placeholder="Search" [(ngModel)]="userSearch">
+      </div>
+
+      <div class="filters">
+        <select class="btn-secondary" [(ngModel)]="userRoleFilter">
+          <option value="All">👤 Role (All)</option>
+          <option value="Admin">Admin</option>
+          <option value="User">User</option>
+          <option value="Guest">Guest</option>
+          <option value="Moderator">Moderator</option>
+        </select>
+        <select class="btn-secondary" [(ngModel)]="userStatusFilter">
+          <option value="All">🎖 Status (All)</option>
+          <option value="Active">Active</option>
+          <option value="Inactive">Inactive</option>
+          <option value="Banned">Banned</option>
+        </select>
+      </div>
+
+      <div class="toolbar-actions">
+        <button class="btn-secondary" (click)="exportCSV()">⎋ Export</button>
+        <button class="btn" (click)="openAdd()">+ Add User</button>
+      </div>
+    </div>
+
+    <table class="table-header-dark">
+      <thead>
+        <tr>
+          <th style="width: 40px;"><div class="checkbox-custom"></div></th>
+          <th>Full Name ↕</th>
+          <th>Email ↕</th>
+          <th>Username ↕</th>
+          <th>Status ↕</th>
+          <th>Role ↕</th>
+          <th>Joined Date ↕</th>
+          <th>Last Active ↕</th>
+          <th>Actions ↕</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (customer of filteredCustomers(); track customer._id; let i = $index) {
+        <tr>
+          <td><div class="checkbox-custom"></div></td>
+          <td>
+            <div class="user-col">
+              <div class="user-avatar" [style.background]="['#fecdd3', '#bfdbfe', '#bbf7d0', '#fef08a'][i % 4]">
+                {{customer.name.charAt(0).toUpperCase()}}
+              </div>
+              <span class="name">{{customer.name}}</span>
+            </div>
+          </td>
+          <td class="email-cell">{{customer.name.split(' ')[0].toLowerCase()}}&#64;gmail.com</td>
+          <td>{{customer.name.split(' ')[0].toLowerCase()}}{{i*7}}</td>
+          <td>
+            <span class="status active1">{{customer.status || 'Active'}}</span>
+          </td>
+          <td>{{customer.role || 'User'}}</td>
+          <td>{{customer.createdAt || 'Oct 12, 2023'}}</td>
+          <td>{{i + 1}} days ago</td>
+          <td class="actions-cell">
+            <button class="btn-icon" (click)="openEdit(customer)">✏️</button>
+            <button class="btn-icon delete" (click)="onDelete(customer._id!)">🗑️</button>
+          </td>
+        </tr>
+        }
+      </tbody>
+    </table>
+
+    <div class="pagination">
+      <div>Rows per page: <select [(ngModel)]="rowsPerPage">
+        <option [value]="5">5</option>
+        <option [value]="10">10</option>
+        <option [value]="50">50</option>
+      </select> of {{filteredCustomers().length}} rows</div>
+      <div class="page-numbers">
+        <button class="page-btn">«</button>
+        <button class="page-btn">‹</button>
+        <button class="page-btn active">1</button>
+        <button class="page-btn">2</button>
+        <button class="page-btn">3</button>
+        <button class="page-btn" style="border:none;">...</button>
+        <button class="page-btn">10</button>
+        <button class="page-btn">›</button>
+        <button class="page-btn">»</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+@if (showModal) {
+<div class="modal-overlay">
+  <div class="card modal">
+    <h3>{{ editing ? 'Edit User' : 'Add New User' }}</h3>
+    <div class="modal-form">
+      <div>
+        <label>Full Name</label>
+        <input type="text" placeholder="John Doe" [(ngModel)]="form.name">
+      </div>
+      <div>
+        <label>Phone Number</label>
+        <input type="text" placeholder="+1 234 567 890" [(ngModel)]="form.phone">
+      </div>
+      <div>
+        <label>Address</label>
+        <input type="text" placeholder="123 Main St" [(ngModel)]="form.address">
+      </div>
+      <div>
+        <label>User Role</label>
+        <select [(ngModel)]="form.role">
+          <option value="Admin">Admin</option>
+          <option value="User">User</option>
+          <option value="Guest">Guest</option>
+          <option value="Moderator">Moderator</option>
+        </select>
+      </div>
+      <div>
+        <label>Account Status</label>
+        <select [(ngModel)]="form.status">
+          <option value="Active">Active</option>
+          <option value="Inactive">Inactive</option>
+          <option value="Banned">Banned</option>
+        </select>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-secondary" (click)="showModal = false">Cancel</button>
+        <button class="btn" (click)="save()">{{ editing ? 'Update' : 'Save' }} User</button>
+      </div>
+    </div>
+  </div>
+</div>
+}

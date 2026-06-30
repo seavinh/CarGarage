@@ -1,0 +1,5 @@
+{
+  "buildCommand": "cd CarGarage && npm install --legacy-peer-deps && npx ng build",
+  "outputDirectory": "CarGarage/dist/CarGarage/browser",
+  "framework": null
+}
